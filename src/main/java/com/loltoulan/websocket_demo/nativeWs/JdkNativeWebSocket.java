@@ -1,4 +1,4 @@
-package com.loltoulan.websocket_demo.controller;
+package com.loltoulan.websocket_demo.nativeWs;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;

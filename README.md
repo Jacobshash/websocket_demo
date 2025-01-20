@@ -40,7 +40,7 @@
 
 #### WebSocket服务器
 
-在`com.loltoulan.websocket_demo.controller.JdkNativeWebSocket`类中实现了WebSocket服务器。该服务器会在有新客户端连接时发送欢迎消息，并广播所有客户端的消息。
+在`com.loltoulan.websocket_demo.nativeWs.JdkNativeWebSocket`类中实现了WebSocket服务器。该服务器会在有新客户端连接时发送欢迎消息，并广播所有客户端的消息。
 
 #### REST控制器
 

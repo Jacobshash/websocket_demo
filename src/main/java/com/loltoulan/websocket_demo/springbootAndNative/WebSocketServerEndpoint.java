@@ -1,4 +1,4 @@
-package com.loltoulan.websocket_demo.config;
+package com.loltoulan.websocket_demo.springbootAndNative;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ public class WebSocketServerEndpoint {
 
     /**
      * 连接成功
-     *
      * @param session
      */
     @OnOpen
@@ -29,7 +28,6 @@ public class WebSocketServerEndpoint {
 
     /**
      * 连接关闭
-     *
      * @param session
      */
     @OnClose
@@ -40,7 +38,6 @@ public class WebSocketServerEndpoint {
 
     /**
      * 接收到消息
-     *
      * @param text
      */
     @OnMessage
@@ -48,8 +45,5 @@ public class WebSocketServerEndpoint {
         log.info("servet {}, 接收到消息：{}",session.getId(), text);
         return "servet 发送：" + text;
     }
-
-
-
 
 }
