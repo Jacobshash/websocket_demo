@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <title>Document</title>
+    <style>
+        .newmessage {
+            color: green;
+        }
+        .errormessage {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="input-group">
+            <input type="text" id='urlInput' class="form-control" placeholder='输入websocket端点'>
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" onclick="reconnect();">重新连接</button>
+                </span>
+        </div>
+    </div>
+    <div class="col-lg-8" id="output" style="border:1px solid #ccc;height:365px;overflow: auto;margin-left:15px">
+    </div>
+    <div class="col-lg-6">
+        <div class="input-group">
+            <input type="text" id='messageInput' class="form-control" placeholder='待发信息'>
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" onclick="doSend();">发送</button>
+                </span>
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" onclick="broadcast();">广播</button>
+                </span>
+        </div>
+    </div>
+</div>
+
+</body>
+<script src="stomp.min.js"></script>
+<script src="jquery-2.1.1.min.js"></script>
+<script src="bootstrap.min.js"></script>
+<script type="text/javascript">
+
+    var defaultUrl = "ws://localhost:81/ws"
+    document.getElementById("urlInput").value = defaultUrl;
+
+    var stomp;
+
+    var appendMessage = function (msg) {
+        var div = "<div class='newmessage'>" + msg + "</div>";
+        $("#output").append(div);
+    }
+
+    var reportError = function (msg) {
+        var div = "<div class='errormessage'>" + msg + "</div>";
+        $("#output").append(div);
+    }
+
+    function connects(url) {
+        var promise = new Promise(function (resolve, reject) {
+            var client = Stomp.client(url);
+
+            var headers = {
+                username: 'admin',
+                password: 'admin',
+                // additional header
+                'client-id': 'stomp-client-id'
+            };
+
+            appendMessage('connecting to ' + url)
+            client.connect(headers, function (frame) {
+                resolve(client);
+            }, function (error) {
+                reject(error)
+            });
+        });
+        return promise;
+    }
+
+    var connect_callback = function (client) {
+        stomp = client
+        appendMessage('subscribing on ' + '/queue/subscribe')
+
+        client.subscribe('/user/queue/serverReply', function (message) {
+            console.log('subscribe topic callback:' + message.body);
+            appendMessage('subscribe topic callback:' + message.body)
+        });
+
+        appendMessage('subscribing on ' + '/user/queue/notifications')
+
+        client.subscribe("/queue/notifications", function (message) {
+            var content = message.body;
+            var obj = JSON.parse(content);
+            console.log("收到广播消息：" + message.body);
+            appendMessage("收到广播消息：" + message.body);
+        });
+
+        var payload = JSON.stringify({ 'message': 'greeting to stomp broker!' });
+        client.send("/app/greeting", {}, payload);
+
+    };
+
+    var error_callback = function (error) {
+        reportError("连接失败!");
+    };
+
+    var doSend = function () {
+        var msg = document.getElementById("messageInput").value
+        var payload = JSON.stringify({ 'message': msg });
+        stomp.send("/app/greeting", {}, payload);
+    }
+
+    var broadcast = function () {
+        var msg = document.getElementById("messageInput").value
+        var payload = JSON.stringify({ 'message': msg });
+        stomp.send("/app/shout", {}, payload);
+    }
+
+    function reconnect() {
+        if (stomp) {
+            stomp.disconnect(function () {
+                console.log("See you next time!");
+            })
+        }
+        connects(document.getElementById("urlInput").value).then(connect_callback).catch(error_callback)
+
+    }
+    reconnect();
+
+</script>
+
+</html>
